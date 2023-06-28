@@ -1,17 +1,22 @@
 pragma solidity ^0.8.0;
 
 contract MotionAttendance {
-    struct Voter {
+    struct Attendee {
         bool hasVoted;
-        uint voteDisposition;
-        uint energyLevel;
-        // add more information about the voter
+        uint voteDisposition; // Yes/no/abstain
+        uint energyLevel; // how supportive is said attendee perceived to the issue at hand
+        uint mediaUsed; // device type used to attend:   0 means in-person; 1 means laptop; 2 means AR; 3 means VR
+        bytes32 callsign;
+        uint intention; // scale of 1 to 10: 10 is highest, attendee’s intention to push topic forward
+        bytes32 emailAddress;
+        
+        // add more information
         // real name
         // address. etc.
     }
 
     struct Attendance {
-        Voter[] voters;
+        Attendee[] attendees;
     }
 
     address public chairperson;
@@ -22,11 +27,11 @@ contract MotionAttendance {
         chairperson = msg.sender;
     }
 
-    function populateVoters(bytes32 motionName, Voter[] memory voters) public {
-        attendances[motionName].voters = voters;
+    function populateAttendees(bytes32 motionName, Attendee[] memory attendees) public {
+        attendances[motionName].attendees = attendees;
     }
 
-    function getVoters(bytes32 motionName) public view returns(Attendance memory) {
+    function getAttendees(bytes32 motionName) public view returns(Attendance memory) {
         return attendances[motionName];
     }
 }
