@@ -1,5 +1,47 @@
 pragma solidity ^0.8.0;
 
+contract MotionAttendance {
+    struct Attendee {
+        uint voteDisposition; // Yes/no/abstain
+        uint energyLevel; // how supportive is said attendee perceived to the issue at hand
+        uint mediaUsed; // device type used to attend:   0 means in-person; 1 means laptop; 2 means AR; 3 means VR
+        bytes32 callsign;
+        uint intention; // scale of 1 to 10: 10 is highest, attendee’s intention to push topic forward
+    }
+
+    struct Attendance {
+        Attendee[] attendees;
+    }
+
+    event AttendeeAdded(bytes32 motionName, uint voteDisposition, uint energyLevel, uint mediaUsed, bytes32 callsign, uint intent);
+    address public chairperson;
+    mapping(bytes32 => Attendance) attendances;
+
+    // Chairperson has to create the motion
+    constructor() {
+        chairperson = msg.sender;
+    }
+
+    function addAttendee(bytes32 motionName, uint voteDisposition, uint energyLevel, uint mediaUsed, bytes32 callsign, uint intent) public {
+        Attendee memory attendee;
+        attendee.voteDisposition = voteDisposition;
+        attendee.energyLevel = energyLevel;
+        attendee.mediaUsed = mediaUsed;
+        attendee.callsign = callsign;
+        attendee.intention = intent;
+        attendances[motionName].attendees.push(attendee);
+        emit AttendeeAdded(motionName, voteDisposition, energyLevel, mediaUsed, callsign, intent);
+    }
+
+    function getAttendance(bytes32 motionName) public view returns (uint) {
+        return attendances[motionName].attendees.length;
+    }
+
+    function getAttendee(bytes32 motionName, uint index) public view returns (Attendee memory) {
+        return attendances[motionName].attendees[index];
+    }
+}
+
 contract MotionRecords {
     // meeting metadata
     struct Motion {
@@ -16,13 +58,10 @@ contract MotionRecords {
         bytes32[] motionRecordings; // IPFS hash for breakout room recordings
     }
 
-    address public chairperson;
-
     mapping(bytes32 => Motion) public motions;
 
     // Chairperson has to create the motion
-    constructor(bytes32 motionName) {
-        chairperson = msg.sender;
+    function createMotion(bytes32 motionName) public {
         Motion memory motion;
         motion.name = motionName;
 
@@ -40,7 +79,6 @@ contract MotionRecords {
                                , uint uncaringLevel
                                , bytes32[] memory recordings
                                ) public {
-        require(msg.sender == chairperson, "Only chairperson can bulk update votes");
         motions[motionName].yesCount = yesCount;
         motions[motionName].noCount = noCount;
         motions[motionName].abstainCount = abstainCount;
