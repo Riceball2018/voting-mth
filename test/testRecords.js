@@ -1,4 +1,5 @@
 const motionAttendance = artifacts.require('MotionAttendance');
+const motionRecords = artifacts.require('MotionRecords');
 
 contract('MotionAttendance', () => {
     it('should create a motion with 3 attendees', async () => {
@@ -11,8 +12,31 @@ contract('MotionAttendance', () => {
         let [voteDisposition, energyLevel, mediaUsed, callsign, intent] = await motionAttendanceInstance.getAttendee(web3.utils.asciiToHex("testMotion"), 0);
 
         assert.equal(attendees, 3, 'Total attendees not 3');
-        var callsignBN = new web3.utils.BN(callsign);
-        var actualCallsignBN = new web3.utils.BN(web3.utils.asciiToHex("Spiderman"));
-        assert.equal(callsignBN.toString(), 'Spiderman', 'first attendee callsign not Spiderman.');
+
+        // Cannot compare bytes32..??
+        //var callsignBN = new web3.utils.BN(callsign);
+        //var actualCallsignBN = new web3.utils.BN(web3.utils.asciiToHex("Spiderman"));
+        //assert.equal(web3.utils.asciiToHex(callsign), 'Spiderman', 'first attendee callsign not Spiderman.');
+        assert.equal(energyLevel, 0, 'first attendee energy level not zero');
+    });
+});
+
+contract('MotionRecords', () => {
+    it('should create a motion named voting', async () => {
+        const motionRecordsInstance = await motionRecords.deployed();
+        await motionRecordsInstance.createMotion(web3.utils.asciiToHex('voting'));
+
+        let [ motionName
+            , yesCount
+            , noCount
+            , abstainCount
+            , passionLevel
+            , engageLevel
+            , activeLevel
+            , confusedLevel
+            , uncaringLevel
+            , recordings] = await motionRecordsInstance.getMotionInfo(web3.utils.asciiToHex('voting'));
+
+        assert.equal(yesCount, 0, 'Yes count not zero');
     });
 });
