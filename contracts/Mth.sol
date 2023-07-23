@@ -1,5 +1,9 @@
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+
 contract MotionAttendance {
     struct Attendee {
         uint voteDisposition; // Yes/no/abstain
@@ -92,5 +96,21 @@ contract MotionRecords {
 
     function getMotionInfo(bytes32 motionName) public view returns (Motion memory) {
         return motions[motionName];
+    }
+}
+
+contract CityVoucher is ERC721URIStorage {
+    uint256 private _tokenIds;
+
+    constructor() ERC721("CityVoucher", "CV") {}
+
+    function awardItem(address player, string memory tokenURI) public returns (uint256) {
+        _tokenIds++;
+
+        uint256 newItemId = _tokenIds;
+        _mint(player, newItemId);
+        _setTokenURI(newItemId, tokenURI);
+
+        return newItemId;
     }
 }

@@ -1,5 +1,6 @@
 const motionAttendance = artifacts.require('MotionAttendance');
 const motionRecords = artifacts.require('MotionRecords');
+const cityVoucher = artifacts.require('CityVoucher');
 
 contract('MotionAttendance', () => {
     it('should create a motion with 3 attendees', async () => {
@@ -38,5 +39,22 @@ contract('MotionRecords', () => {
             , recordings] = await motionRecordsInstance.getMotionInfo(web3.utils.asciiToHex('voting'));
 
         assert.equal(yesCount, 0, 'Yes count not zero');
+    });
+});
+
+contract('CityVoucher', accounts => {
+    const testAddress = accounts[1];
+
+    it('should award an NFT to another address', async () => {
+        const cityVoucherInstance = await cityVoucher.deployed();
+        console.log('testAddress', testAddress);
+
+        let result = await cityVoucherInstance.awardItem(testAddress, '{motionName: \'voting\', voucherAmount: 50}');
+        var tokenId = result.logs[0].args.tokenId.toNumber();
+        console.log('token id', tokenId);
+
+        var ownerAddress = await cityVoucherInstance.ownerOf(tokenId);
+        console.log('owner address', ownerAddress);
+        assert(ownerAddress == testAddress, 'player address not equal');
     });
 });
